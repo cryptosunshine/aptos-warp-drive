@@ -24,7 +24,21 @@ const bleepsSettings = {
   type: { player: 'type' }
 };
 const coinMoveHex = (coinName:string) => {
-  return `0xa11ceb0b05000000050100020202040706130819200a39050000000100000${coinName}04436f696e0b64756d6d795f6669656c640b7052b67f7874d936f53e4c02d17157b0134d4635359bfd225775dfe6c2a3e3000201020100`
+  return `0xa11ceb0b05000000050100020202040706130819200a39050000000100000${toHexString(BCS.bcsSerializeStr(coinName))}04436f696e0b64756d6d795f6669656c640b7052b67f7874d936f53e4c02d17157b0134d4635359bfd225775dfe6c2a3e3000201020100`
+}
+function byteToHex(byte:any) {
+  const unsignedByte = byte & 0xff;
+  return unsignedByte.toString(16);
+  // if (unsignedByte < 16) {
+  //   return '0' + unsignedByte.toString(16);
+  // } else {
+  //   return unsignedByte.toString(16);
+  // }
+}
+function toHexString(bytes:any) {
+  return Array.from(bytes)
+    .map(byte => byteToHex(byte))
+    .join('');
 }
 type CoinMessage = {
   symbol: string,
@@ -46,20 +60,7 @@ const Coin: FC = () => {
     console.log(toHexString(BCS.bcsSerializeStr("a")))
  
   }, [activate]);
-  function byteToHex(byte:any) {
-    const unsignedByte = byte & 0xff;
-    return unsignedByte.toString(16);
-    // if (unsignedByte < 16) {
-    //   return '0' + unsignedByte.toString(16);
-    // } else {
-    //   return unsignedByte.toString(16);
-    // }
-  }
-  function toHexString(bytes:any) {
-    return Array.from(bytes)
-      .map(byte => byteToHex(byte))
-      .join('');
-  }
+  
   const connect = () => {
     window.aptos.connect()
     window.aptos.account().then((data : {address: string}) => setAddress(data.address));
@@ -139,12 +140,13 @@ const Coin: FC = () => {
     })
   }
 
-  const publishMoule = async (symbol: string) => {
+  const publishMoule = async () => {
+    let bytecode = coinMoveHex(coinMessage.symbol);
     const transaction = {
       type: "module_bundle_payload",
       modules: [
         {
-          bytecode: coinMoveHex(symbol) //0x...
+          bytecode: bytecode //0x...
         }
       ]
     };
@@ -207,7 +209,7 @@ const Coin: FC = () => {
             <input type="number" onChange={(e) => {setCoinMessage({ symbol: coinMessage.symbol, description: coinMessage.description, precision: Number(e.target.value) })}} placeholder="精度" value={coinMessage.precision} />
             <Button
               animator={{ activate }}
-              onClick={event => publishMoule(coinMessage.symbol)}
+              onClick={event => publishMoule()}
 
             >
               <Text>发布</Text>
