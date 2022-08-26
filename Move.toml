@@ -1,0 +1,6 @@
+[package]
+name = "aptos"
+version = "0.0.0"
+
+[addresses]
+CoinType = "0x0b7052b67f7874d936f53e4c02d17157b0134d4635359bfd225775dfe6c2a3e3"
